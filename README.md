@@ -1,0 +1,1 @@
+A simple ORM framework between mybatis and jpa,complete ORM and semi-automatic assembly of SQL are provided.
