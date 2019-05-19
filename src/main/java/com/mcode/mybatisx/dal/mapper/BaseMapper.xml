@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--suppress SqlNoDataSourceInspection, SqlDialectInspection -->
+<mapper namespace="com.mcode.mybatisx.dal.mapper.BaseMapper">
+
+    <insert id="insertBatch" keyColumn="id" keyProperty="saveDo.id" useGeneratedKeys="true">
+        INSERT INTO ${tableName}
+        <foreach collection="fields" item="field" index="index" open="(" close=")" separator=",">
+            `${field}`
+        </foreach>
+        VALUES
+        <foreach collection="saveDo" item="data" separator=",">
+            <foreach collection="data.saveValues" item="tuple" separator="," open="(" close=")">
+                #{tuple.first${tuple.second}}
+            </foreach>
+        </foreach>
+    </insert>
+
+    <select id="select" parameterType="com.mcode.mybatisx.dal.entity.template.SqlTemplate" resultType="java.util.Map">
+        ${sql}
+    </select>
+
+    <select id="count" parameterType="com.mcode.mybatisx.dal.entity.template.SqlTemplate" resultType="java.lang.Integer">
+        ${sql}
+    </select>
+
+    <update id="update" keyColumn="id" parameterType="com.mcode.mybatisx.dal.entity.template.SqlTemplate">
+        ${sql}
+    </update>
+
+    <delete id="delete" parameterType="com.mcode.mybatisx.dal.entity.template.SqlTemplate">
+        ${sql}
+    </delete>
+
+    <insert id="nativeSql" keyColumn="id" parameterType="com.mcode.mybatisx.dal.entity.template.SqlTemplate">
+        ${sql}
+    </insert>
+</mapper>
