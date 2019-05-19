@@ -22,8 +22,7 @@ public abstract class Repository<PK, DATA extends BaseDO> extends CURDRepository
     private NativeSqlExecutor nativeSqlExecutor;
 
     protected DSLAccessLayer createDsl() {
-        //todo dsl
-        return dslAccessLayer;
+        return dslAccessLayer.createDsl(parseClass());
     }
 
     protected NativeSqlExecutor createSql() {

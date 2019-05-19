@@ -51,6 +51,10 @@ public class CURDRepository<PK, DATA extends BaseDO> implements CURDAccessLayer<
         }
     }
 
+    protected Class<DATA> parseClass(){
+        return clazz;
+    }
+
     @Override
     public List<DATA> selectByIds(List<PK> ids) {
         requireNonEmpty(ids, "ids");
