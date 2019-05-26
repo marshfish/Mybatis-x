@@ -7,6 +7,7 @@ import com.mcode.mybatisx.dal.core.executor.MybatisNativeSqlExecutor;
 import com.mcode.mybatisx.dal.core.executor.NativeSqlExecutor;
 import com.mcode.mybatisx.dal.core.executor.ResultAssemble;
 import com.mcode.mybatisx.dal.core.executor.SqlFactory;
+import com.mcode.mybatisx.dal.core.interceptor.DomainInterceptor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,5 +39,11 @@ public class BeanAutoConfiguration {
     @ConditionalOnMissingBean
     public SqlFactory sqlFactory(){
         return new SqlFactory();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public DomainInterceptor domainInterceptor(){
+        return new DomainInterceptor();
     }
 }

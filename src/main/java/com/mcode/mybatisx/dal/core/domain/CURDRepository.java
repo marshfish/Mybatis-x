@@ -3,17 +3,16 @@ package com.mcode.mybatisx.dal.core.domain;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.map.MapBuilder;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.mcode.mybatisx.dal.core.executor.SqlFactory;
 import com.mcode.mybatisx.dal.core.executor.NativeSqlExecutor;
+import com.mcode.mybatisx.dal.core.executor.SqlFactory;
 import com.mcode.mybatisx.dal.entity.BaseDO;
 import com.mcode.mybatisx.dal.entity.PagingDO;
 import com.mcode.mybatisx.dal.entity.SaveResult;
 import com.mcode.mybatisx.dal.util.EntityInjector;
 import com.mcode.mybatisx.dal.util.EntitySupplier;
+import com.mcode.mybatisx.dal.util.Maps;
 import com.mcode.mybatisx.dal.util.Tuple;
-import com.mcode.mybatisx.dal.util.Util;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -38,6 +37,9 @@ public class CURDRepository<PK, DATA extends BaseDO> implements CURDAccessLayer<
     @Resource
     private SqlFactory sqlFactory;
 
+
+    private static final String SELECT_ID = "SELECT %s FROM %s WHERE id = #{id} ";
+
     @SuppressWarnings("unchecked")
     public CURDRepository() {
         Type superclass = this.getClass().getGenericSuperclass();
@@ -51,7 +53,7 @@ public class CURDRepository<PK, DATA extends BaseDO> implements CURDAccessLayer<
         }
     }
 
-    protected Class<DATA> parseClass(){
+    protected Class<DATA> parseClass() {
         return clazz;
     }
 
@@ -64,7 +66,9 @@ public class CURDRepository<PK, DATA extends BaseDO> implements CURDAccessLayer<
     @Override
     public DATA selectById(PK id) {
         requireNonEmpty(id, "id");
-        return selectIn(ID_T, Lists.newArrayList(id)).stream().findFirst().orElse(null);
+        String sql = String.format(SELECT_ID, "*", tableName);
+        Maps<String, Object> map = Maps.newHashMap("id", id);
+        return nativeSqlExecutor.select(clazz, sql, map).stream().findFirst().orElse(null);
     }
 
     @Override
@@ -103,8 +107,7 @@ public class CURDRepository<PK, DATA extends BaseDO> implements CURDAccessLayer<
     public int count(DATA param) {
         requireNonEmpty(param, "param");
         String sql = sqlFactory.getCountSql(tableName, param);
-        Map<String, Object> paramMap = new HashMap<>();
-        Util.copyMap(paramMap, param);
+        Map<String, Object> paramMap = BeanUtil.beanToMap(param);
         return nativeSqlExecutor.count(sql, paramMap);
     }
 

@@ -4,9 +4,8 @@ import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -22,9 +21,9 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractTree<S extends TreeNode, R extends AbstractTree<S, R>> implements Tree<S, R> {
     private S node;
-    private List<R> childNode = Lists.newArrayList();
+    private List<R> childNode;
     private transient Supplier<R> supplier;
-    private transient BiFunction<S, Supplier<R>, R> function;
+    private transient Function<Supplier<R>, R> function;
 
     public S getNode() {
         return node;
@@ -50,7 +49,7 @@ public abstract class AbstractTree<S extends TreeNode, R extends AbstractTree<S,
     }
 
     @SuppressWarnings("unchecked")
-     R setMapper(BiFunction<S, Supplier<R>, R> function) {
+     R setMapper(Function<Supplier<R>, R> function) {
         this.function = function;
         return (R) this;
     }
@@ -64,10 +63,10 @@ public abstract class AbstractTree<S extends TreeNode, R extends AbstractTree<S,
 
 
     @Override
-    public List<S> flatTreeNode() {
+    public List<S> flatChildTreeNode() {
         if (CollectionUtils.isNotEmpty(childNode)) {
             List<S> collect = childNode.stream().
-                    map(AbstractTree::flatTreeNode).
+                    map(AbstractTree::flatChildTreeNode).
                     flatMap(Collection::stream).
                     collect(Collectors.toList());
             collect.add(node);
@@ -79,10 +78,10 @@ public abstract class AbstractTree<S extends TreeNode, R extends AbstractTree<S,
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<R> flatTree() {
+    public List<R> flatChildTree() {
         if (CollectionUtils.isNotEmpty(childNode)) {
             List<R> collect = childNode.stream().
-                    map(Tree::flatTree).
+                    map(Tree::flatChildTree).
                     flatMap(Collection::stream).
                     collect(Collectors.toList());
             collect.add((R)this);
@@ -92,38 +91,18 @@ public abstract class AbstractTree<S extends TreeNode, R extends AbstractTree<S,
     }
 
 
-    /**
-     * 添加新节点
-     *
-     * @param node               节点
-     * @param persistentConsumer 持久化操作
-     */
-    public void addNode(S node, Consumer<S> persistentConsumer) {
-        persistentConsumer.accept(node);
-    }
-
-    /**
-     * 删除节点
-     *
-     * @param node               节点
-     * @param persistentConsumer 删除策略
-     */
-    public void removeNode(S node, Consumer<S> persistentConsumer) {
-        persistentConsumer.accept(node);
-    }
-
-
     @Override
     public R selectTreeNode(S node, Function<Long, List<S>> operation) {
         node.assertNull();
+        R resultNode = function.apply(supplier).setNode(node);
         if (node.judgeParent()) {
             List<R> result = operation.apply(node.getId())
                     .parallelStream()
                     .map(e -> selectTreeNode(e, operation))
                     .collect(Collectors.toList());
-            return function.apply(node, supplier).setChildNode(result);
+            return resultNode.setChildNode(result);
         }
-        return function.apply(node, supplier);
+        return resultNode.setChildNode(Collections.emptyList());
     }
 
 
@@ -140,7 +119,7 @@ public abstract class AbstractTree<S extends TreeNode, R extends AbstractTree<S,
     public List<S> selectFlatMultiTreeNode(List<S> nodes, Function<Long, List<S>> operation) {
         return this.selectMultiTreeNode(nodes, operation).
                 stream().
-                map(Tree::flatTreeNode).
+                map(Tree::flatChildTreeNode).
                 flatMap(Collection::stream).
                 collect(Collectors.toList());
     }
@@ -148,7 +127,7 @@ public abstract class AbstractTree<S extends TreeNode, R extends AbstractTree<S,
 
     @Override
     public List<S> selectFlatTreeNode(S node, Function<Long, List<S>> operation) {
-        return this.selectTreeNode(node, operation).flatTreeNode();
+        return this.selectTreeNode(node, operation).flatChildTreeNode();
     }
 
 

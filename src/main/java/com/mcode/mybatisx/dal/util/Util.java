@@ -1,11 +1,5 @@
 package com.mcode.mybatisx.dal.util;
 
-import cn.hutool.core.bean.BeanDesc;
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
@@ -15,36 +9,6 @@ import java.util.function.BooleanSupplier;
 
 @Slf4j
 public class Util {
-    public static void copyMap(Map dest, Object orig) {
-        copyMap(dest, orig, true, null);
-    }
-
-    private static void copyMap(Map dest, Object orig, boolean copyNulls, String[] ext) {
-        if (dest == null)
-            throw new IllegalArgumentException("No destination bean specified");
-        if (orig == null)
-            throw new IllegalArgumentException("No origin bean specified");
-        JSONObject ojson = (JSONObject) JSON.toJSON(orig);
-        for (String key : ojson.keySet()) {
-            if (((ojson.get(key) == null) && (!copyNulls)) || searchInArray(key, ext)) {
-
-            } else {
-                dest.put(key, ojson.get(key));
-            }
-        }
-    }
-
-    private static boolean searchInArray(String key, String[] arry) {
-        if (arry != null && arry.length > 0) {
-            for (String s : arry) {
-                if (key.equals(s)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 
     /***
      * 讲一个字符串中两个字符之间的值替换为其他值
